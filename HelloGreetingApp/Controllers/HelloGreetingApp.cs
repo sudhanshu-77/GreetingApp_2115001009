@@ -1,3 +1,4 @@
+using BusinessLayer.Interface;
 using Microsoft.AspNetCore.Mvc;
 using ModelLayer.Model;
 using NLog;
@@ -12,6 +13,14 @@ namespace HelloGreetingApp.Controllers
     public class HelloGreetingAppController : ControllerBase
     {
         private static readonly NLog.ILogger logger = LogManager.GetCurrentClassLogger();
+
+
+        private readonly IGreetingBL _greetingBL;
+        public HelloGreetingAppController(IGreetingBL greetingBL)
+        {
+            _greetingBL = greetingBL;
+        }
+
 
         /// <summary>
         /// Get method to get the greeting message
@@ -130,6 +139,14 @@ namespace HelloGreetingApp.Controllers
             };
 
             return Ok(responseModel);
+        }
+
+
+        //UC2
+        [HttpGet("Greeting")]
+        public IActionResult GetGreeting()
+        {
+            return Ok(_greetingBL.GetGreetingBL());
         }
     }
 }
