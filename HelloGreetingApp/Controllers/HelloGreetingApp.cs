@@ -1,0 +1,135 @@
+using Microsoft.AspNetCore.Mvc;
+using ModelLayer.Model;
+using NLog;
+
+namespace HelloGreetingApp.Controllers
+{
+    /// <summary>
+    /// Class Providing API for HelloGreetingApp
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public class HelloGreetingAppController : ControllerBase
+    {
+        private static readonly NLog.ILogger logger = LogManager.GetCurrentClassLogger();
+
+        /// <summary>
+        /// Get method to get the greeting message
+        /// </summary>
+        /// <returns> "Hello World" </returns>
+        [HttpGet]
+        public IActionResult Get()
+        {
+            logger.Info("Get method called");
+
+            ResponseModel<string> responseModel = new ResponseModel<string>
+            {
+                Success = true,
+                Message = "Hello to creating the API endpoints",
+                Data = "Hello World"
+            };
+
+            return Ok(responseModel);
+        }
+
+        /// <summary>
+        /// Post method to receive a greeting name and return a personalized message
+        /// </summary>
+        /// <returns>A personalized greeting message</returns>
+        [HttpPost]
+        public IActionResult Post(RequestModel requestModel)
+        {
+            if (requestModel == null || !ModelState.IsValid)
+            {
+                logger.Warn("Invalid POST request received");
+                return BadRequest("Invalid request data");
+            }
+
+            logger.Info("Post method called with Key: {0}, Value: {1}", requestModel.Key, requestModel.Value);
+
+            ResponseModel<string> responseModel = new ResponseModel<string>
+            {
+                Success = true,
+                Message = "Request received successfully",
+                Data = $"Key: {requestModel.Key}, Value: {requestModel.Value}"
+            };
+
+            return CreatedAtAction(nameof(Get), responseModel);
+        }
+
+        /// <summary>
+        /// Put method to update a greeting message
+        /// </summary>
+        /// <returns>Confirmation of update</returns>
+        [HttpPut]
+        public IActionResult Put([FromBody] RequestModel requestModel)
+        {
+            if (requestModel == null || !ModelState.IsValid)
+            {
+                logger.Warn("Invalid PUT request received");
+                return BadRequest("Invalid request data");
+            }
+
+            logger.Info("Put method called with Key: {0}, Value: {1}", requestModel.Key, requestModel.Value);
+
+            ResponseModel<string> responseModel = new ResponseModel<string>
+            {
+                Success = true,
+                Message = "Greeting updated successfully",
+                Data = $"Updated Key: {requestModel.Key}, Updated Value: {requestModel.Value}"
+            };
+
+            return Ok(responseModel);
+        }
+
+        /// <summary>
+        /// Patch method to partially update a greeting message
+        /// </summary>
+        /// <returns>Confirmation of partial update</returns>
+        [HttpPatch]
+        public IActionResult Patch([FromBody] RequestModel requestModel)
+        {
+            if (requestModel == null || !ModelState.IsValid)
+            {
+                logger.Warn("Invalid PATCH request received");
+                return BadRequest("Invalid request data");
+            }
+
+            logger.Info("Patch method called with Key: {0}, Value: {1}", requestModel.Key, requestModel.Value);
+
+            ResponseModel<string> responseModel = new ResponseModel<string>
+            {
+                Success = true,
+                Message = "Greeting partially updated successfully",
+                Data = $"Partially Updated Key: {requestModel.Key}, Partially Updated Value: {requestModel.Value}"
+            };
+
+            return Ok(responseModel);
+        }
+
+        /// <summary>
+        /// Delete method to remove a greeting message
+        /// </summary>
+        /// <returns>Confirmation of deletion</returns>
+        [HttpDelete("{key}")]
+        public IActionResult Delete(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                logger.Warn("Invalid DELETE request with empty key");
+                return BadRequest("Key cannot be null or empty");
+            }
+
+            logger.Info("Delete method called with Key: {0}", key);
+
+            ResponseModel<string> responseModel = new ResponseModel<string>
+            {
+                Success = true,
+                Message = "Greeting deleted successfully",
+                Data = $"Deleted Key: {key}"
+            };
+
+            return Ok(responseModel);
+        }
+    }
+}
