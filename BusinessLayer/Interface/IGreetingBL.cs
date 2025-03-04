@@ -10,5 +10,7 @@ namespace BusinessLayer.Interface
     {
 
         string GetGreetingBL();
+
+        string GetGreeting(string? firstName, string? lastName);
     }
 }
