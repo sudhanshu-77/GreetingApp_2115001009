@@ -77,7 +77,25 @@ namespace RepositoryLayer.Service
             }
             return null;
         }
+
+
+        //UC8
+        public bool DeleteGreetingRL(int id)
+        {
+            var entity = _dbContext.Greet.FirstOrDefault(g => g.Id == id);
+            if (entity != null)
+            {
+                _dbContext.Greet.Remove(entity);
+                _dbContext.SaveChanges();
+                return true; // Successfully Deleted
+            }
+            return false; // Not Found
+        }
     }
+
+    
+
+
     
 
 
