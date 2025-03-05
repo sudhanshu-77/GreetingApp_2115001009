@@ -177,5 +177,33 @@ namespace HelloGreetingApp.Controllers
             return Created("Greeting Created", response);
 
         }
+
+        //UC5
+
+        [HttpGet("GetGreetingById/{id}")]
+        public IActionResult GetGreetingById(int id)
+        {
+            var response = new ResponseModel<GreetingModel>();
+            try
+            {
+                var result = _greetingBL.GetGreetingByIdBL(id);
+                if (result != null)
+                {
+                    response.Success = true;
+                    response.Message = "Greeting Message Found";
+                    response.Data = result;
+                    return Ok(response);
+                }
+                response.Success = false;
+                response.Message = "Greeting Message Not Found";
+                return NotFound(response);
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"An error occurred: {ex.Message}";
+                return StatusCode(500, response);
+            }
+        }
     }
 }
