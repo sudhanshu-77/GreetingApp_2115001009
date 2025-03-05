@@ -12,6 +12,9 @@ namespace RepositoryLayer.Interface
     {
         GreetEntity SaveGreetingRL(GreetingModel greetingModel);
 
-        public GreetingModel GetGreetingByIdRL(int Id);
+        GreetingModel GetGreetingByIdRL(int Id);
+
+
+        List<GreetEntity> GetAllGreetingsRL();
     }
 }
