@@ -1,10 +1,16 @@
+
 using BusinessLayer.Interface;
 using Microsoft.AspNetCore.Mvc;
+using Middleware.GlobalExceptionHandler;
 using ModelLayer.Model;
 using NLog;
+using System;
+using System.Collections.Generic;
 
 namespace HelloGreetingApp.Controllers
 {
+    //UC1
+
     /// <summary>
     /// Class Providing API for HelloGreetingApp
     /// </summary>
@@ -13,19 +19,17 @@ namespace HelloGreetingApp.Controllers
     public class HelloGreetingAppController : ControllerBase
     {
         private static readonly NLog.ILogger logger = LogManager.GetCurrentClassLogger();
-
-
         private readonly IGreetingBL _greetingBL;
+
         public HelloGreetingAppController(IGreetingBL greetingBL)
         {
             _greetingBL = greetingBL;
         }
 
-
         /// <summary>
-        /// Get method to get the greeting message
+        /// Get method to get the greeting message.
         /// </summary>
-        /// <returns> "Hello World" </returns>
+        /// <returns>Returns "Hello World".</returns>
         [HttpGet]
         public IActionResult Get()
         {
@@ -42,9 +46,9 @@ namespace HelloGreetingApp.Controllers
         }
 
         /// <summary>
-        /// Post method to receive a greeting name and return a personalized message
+        /// Post method to receive a greeting name and return a personalized message.
         /// </summary>
-        /// <returns>A personalized greeting message</returns>
+        /// <returns>Returns a personalized greeting message.</returns>
         [HttpPost]
         public IActionResult Post(RequestModel requestModel)
         {
@@ -67,9 +71,9 @@ namespace HelloGreetingApp.Controllers
         }
 
         /// <summary>
-        /// Put method to update a greeting message
+        /// Put method to update a greeting message.
         /// </summary>
-        /// <returns>Confirmation of update</returns>
+        /// <returns>Returns confirmation of update.</returns>
         [HttpPut]
         public IActionResult Put([FromBody] RequestModel requestModel)
         {
@@ -92,9 +96,9 @@ namespace HelloGreetingApp.Controllers
         }
 
         /// <summary>
-        /// Patch method to partially update a greeting message
+        /// Patch method to partially update a greeting message.
         /// </summary>
-        /// <returns>Confirmation of partial update</returns>
+        /// <returns>Returns confirmation of partial update.</returns>
         [HttpPatch]
         public IActionResult Patch([FromBody] RequestModel requestModel)
         {
@@ -117,9 +121,9 @@ namespace HelloGreetingApp.Controllers
         }
 
         /// <summary>
-        /// Delete method to remove a greeting message
+        /// Delete method to remove a greeting message.
         /// </summary>
-        /// <returns>Confirmation of deletion</returns>
+        /// <returns>Returns confirmation of deletion.</returns>
         [HttpDelete("{key}")]
         public IActionResult Delete(string key)
         {
@@ -141,30 +145,47 @@ namespace HelloGreetingApp.Controllers
             return Ok(responseModel);
         }
 
+        // UC2
 
-        //UC2
+        /// <summary>
+        /// Get method to retrieve a generic greeting message.
+        /// </summary>
+        /// <returns>Returns a generic greeting message.</returns>
         [HttpGet("Greeting")]
         public IActionResult GetGreeting()
         {
+            logger.Info("GetGreeting method called");
             return Ok(_greetingBL.GetGreetingBL());
         }
 
         //UC3
+        /// <summary>
+        /// Get method to retrieve a personalized greeting message.
+        /// </summary>
+        /// <param name="firstName">The first name of the person to greet.</param>
+        /// <param name="lastName">The last name of the person to greet.</param>
+        /// <returns>Returns a personalized greeting message.</returns>
         [HttpGet("hello")]
         public IActionResult GetGreeting([FromQuery] string? firstName, [FromQuery] string? lastName)
         {
-
+            logger.Info("GetGreeting method called with firstName: {0}, lastName: {1}", firstName, lastName);
             string greetingMessage = _greetingBL.GetGreeting(firstName, lastName);
             return Ok(new { Message = greetingMessage });
         }
 
+
         //UC4
 
+        /// <summary>
+        /// Post method to save a new greeting message.
+        /// </summary>
+        /// <param name="greetingModel">The greeting model containing the message details.</param>
+        /// <returns>Returns a confirmation of the created greeting.</returns>
         [HttpPost]
         [Route("save")]
-
         public IActionResult SaveGreeting([FromBody] GreetingModel greetingModel)
         {
+            logger.Info("SaveGreeting method called with GreetingModel: {0}", greetingModel);
             var result = _greetingBL.SaveGreetingBL(greetingModel);
 
             var response = new ResponseModel<object>
@@ -172,17 +193,21 @@ namespace HelloGreetingApp.Controllers
                 Success = true,
                 Message = "Greeting Created",
                 Data = result
-
             };
             return Created("Greeting Created", response);
-
         }
 
         //UC5
 
+        /// <summary>
+        /// Get method to retrieve a greeting message by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the greeting message.</param>
+        /// <returns>Returns the greeting message if found, otherwise a not found response.</returns>
         [HttpGet("GetGreetingById/{id}")]
         public IActionResult GetGreetingById(int id)
         {
+            logger.Info("GetGreetingById method called with id: {0}", id);
             var response = new ResponseModel<GreetingModel>();
             try
             {
@@ -200,17 +225,24 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                logger.Error(ex, "An error occurred in GetGreetingById");
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
 
-        //U6
 
+        //UC6
+
+        /// <summary>
+        /// Get method to retrieve all greeting messages.
+        /// </summary>
+        /// <returns>Returns a list of all greeting messages.</returns>
         [HttpGet("GetAllGreetings")]
         public IActionResult GetAllGreetings()
         {
+            logger.Info("GetAllGreetings method called");
             ResponseModel<List<GreetingModel>> response = new ResponseModel<List<GreetingModel>>();
             try
             {
@@ -228,17 +260,25 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                logger.Error(ex, "An error occurred in GetAllGreetings");
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
 
-        //UC7
+        // UC7
 
+        /// <summary>
+        /// Put method to update an existing greeting message.
+        /// </summary>
+        /// <param name="id">The ID of the greeting message to update.</param>
+        /// <param name="greetModel">The updated greeting model.</param>
+        /// <returns>Returns a confirmation of the updated greeting message.</returns>
         [HttpPut("EditGreeting/{id}")]
         public IActionResult EditGreeting(int id, GreetingModel greetModel)
         {
+            logger.Info("EditGreeting method called with id: {0}, GreetingModel: {1}", id, greetModel);
             ResponseModel<GreetingModel> response = new ResponseModel<GreetingModel>();
             try
             {
@@ -256,17 +296,24 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                logger.Error(ex, "An error occurred in EditGreeting");
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
 
         //UC8
 
+        /// <summary>
+        /// Delete method to remove a greeting message by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the greeting message to delete.</param>
+        /// <returns>Returns a confirmation of the deleted greeting message.</returns>
         [HttpDelete("DeleteGreeting/{id}")]
         public IActionResult DeleteGreeting(int id)
         {
+            logger.Info("DeleteGreeting method called with id: {0}", id);
             ResponseModel<string> response = new ResponseModel<string>();
             try
             {
@@ -283,11 +330,12 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                logger.Error(ex, "An error occurred in DeleteGreeting");
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
-
     }
 }
+

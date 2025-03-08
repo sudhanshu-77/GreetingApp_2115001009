@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloGreetingApp", "HelloGreetingApp\HelloGreetingApp.csproj", "{C3303A93-87D1-46DE-BD63-9FB3F1239287}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepositoryLayer", "RepositoryLayer\RepositoryLayer.csproj", "{D8CBB81A-A174-4D22-8150-0A57103EEAF1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelLayer", "ModelLayer\ModelLayer.csproj", "{69FDCDB0-86FC-4750-AD01-7E9384AC2129}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Middleware", "Middleware\Middleware.csproj", "{56D6AFA9-0BE0-465F-8426-112DB5F240D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{69FDCDB0-86FC-4750-AD01-7E9384AC2129}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69FDCDB0-86FC-4750-AD01-7E9384AC2129}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69FDCDB0-86FC-4750-AD01-7E9384AC2129}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56D6AFA9-0BE0-465F-8426-112DB5F240D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56D6AFA9-0BE0-465F-8426-112DB5F240D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56D6AFA9-0BE0-465F-8426-112DB5F240D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56D6AFA9-0BE0-465F-8426-112DB5F240D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
