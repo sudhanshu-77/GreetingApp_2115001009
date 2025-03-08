@@ -21,6 +21,9 @@ namespace RepositoryLayer.Service
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             
         }
+
+        //UC4
+
         public GreetEntity SaveGreetingRL(GreetingModel greetingModel)
         {
             var existingMessage = _dbContext.Greet.FirstOrDefault<GreetEntity>(e => e.Id == greetingModel.Id);
