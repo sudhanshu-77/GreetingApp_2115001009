@@ -1,5 +1,7 @@
+
 using BusinessLayer.Interface;
 using Microsoft.AspNetCore.Mvc;
+using Middleware.GlobalExceptionHandler;
 using ModelLayer.Model;
 using NLog;
 using System;
@@ -17,8 +19,8 @@ namespace HelloGreetingApp.Controllers
     public class HelloGreetingAppController : ControllerBase
     {
         private static readonly NLog.ILogger logger = LogManager.GetCurrentClassLogger();
-
         private readonly IGreetingBL _greetingBL;
+
         public HelloGreetingAppController(IGreetingBL greetingBL)
         {
             _greetingBL = greetingBL;
@@ -143,7 +145,7 @@ namespace HelloGreetingApp.Controllers
             return Ok(responseModel);
         }
 
-        //UC2
+        // UC2
 
         /// <summary>
         /// Get method to retrieve a generic greeting message.
@@ -157,7 +159,6 @@ namespace HelloGreetingApp.Controllers
         }
 
         //UC3
-
         /// <summary>
         /// Get method to retrieve a personalized greeting message.
         /// </summary>
@@ -171,6 +172,7 @@ namespace HelloGreetingApp.Controllers
             string greetingMessage = _greetingBL.GetGreeting(firstName, lastName);
             return Ok(new { Message = greetingMessage });
         }
+
 
         //UC4
 
@@ -224,11 +226,12 @@ namespace HelloGreetingApp.Controllers
             catch (Exception ex)
             {
                 logger.Error(ex, "An error occurred in GetGreetingById");
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
+
 
         //UC6
 
@@ -258,13 +261,13 @@ namespace HelloGreetingApp.Controllers
             catch (Exception ex)
             {
                 logger.Error(ex, "An error occurred in GetAllGreetings");
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
 
-        //UC7
+        // UC7
 
         /// <summary>
         /// Put method to update an existing greeting message.
@@ -294,9 +297,9 @@ namespace HelloGreetingApp.Controllers
             catch (Exception ex)
             {
                 logger.Error(ex, "An error occurred in EditGreeting");
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
 
@@ -328,10 +331,11 @@ namespace HelloGreetingApp.Controllers
             catch (Exception ex)
             {
                 logger.Error(ex, "An error occurred in DeleteGreeting");
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                return StatusCode(500, response);
+                var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
+                return StatusCode(500, errorResponse);
+
             }
         }
     }
 }
+
