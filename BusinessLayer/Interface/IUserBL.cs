@@ -10,7 +10,13 @@ namespace BusinessLayer.Interface
 {
     public interface IUserBL
     {
-        UserEntity RegistrationBL(RegisterModel registerDTO);
-        (UserEntity user, string token) LoginnUserBL(LoginModel loginDTO);
+        UserEntity RegistrationBL(RegisterModel registerModel);
+        (UserEntity user, string token) LoginnUserBL(LoginModel loginModel);
+
+        public bool ValidateEmail(string email);
+
+        public bool UpdateUserPassword(string email, string newPassword);
+
+        public UserEntity GetByEmail(string email);
     }
 }
