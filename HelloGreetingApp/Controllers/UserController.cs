@@ -2,8 +2,6 @@
 using ModelLayer.Model;
 using NLog;
 using BusinessLayer.Interface;
-using Middleware.HashingAlgo;
-
 
 namespace HelloGreetingApplication.Controllers
 {
@@ -20,53 +18,59 @@ namespace HelloGreetingApplication.Controllers
         }
 
         [HttpPost("registerUser")]
-        public IActionResult Register(RegisterModel registerModel)
+        public IActionResult Register(RegisterModel registerDTO)
         {
             try
             {
-                _logger.Info($"Register attempt for email: {registerModel.Email}");
+                _logger.Info($"Register attempt for email: {registerDTO.Email}");
 
-                var newUser = _userBL.RegistrationBL(registerModel);
+                var newUser = _userBL.RegistrationBL(registerDTO);
 
                 if (newUser == null)
                 {
-                    _logger.Warn($"Registration failed. Email already exists: {registerModel.Email}");
+                    _logger.Warn($"Registration failed. Email already exists: {registerDTO.Email}");
                     return Conflict(new { Success = false, Message = "User with this email already exists." });
                 }
 
-                _logger.Info($"User registered successfully: {registerModel.Email}");
+                _logger.Info($"User registered successfully: {registerDTO.Email}");
                 return Created("user registered", new { Success = true, Message = "User registered successfully." });
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Registration failed for {registerModel.Email}");
+                _logger.Error(ex, $"Registration failed for {registerDTO.Email}");
                 return BadRequest(new { Success = false, Message = "Registration failed.", Error = ex.Message });
             }
         }
 
         [HttpPost("loginUser")]
-        public IActionResult PostData(LoginModel loginModel)
+        public IActionResult Login(LoginModel loginDTO)
         {
             try
             {
-                _logger.Info($"Login attempt for user: {loginModel.Email}");
+                _logger.Info($"Login attempt for user: {loginDTO.Email}");
 
-                var user = _userBL.LoginnUserBL(loginModel);
+                var (user, token) = _userBL.LoginnUserBL(loginDTO);
 
-                if (user == null)
+                if (user == null || string.IsNullOrEmpty(token))
                 {
-                    _logger.Warn($"Invalid login attempt for user: {loginModel.Email}");
+                    _logger.Warn($"Invalid login attempt for user: {loginDTO.Email}");
                     return Unauthorized(new { Success = false, Message = "Invalid username or password." });
                 }
 
-                _logger.Info($"User {loginModel.Email} logged in successfully.");
-                return Ok(new { Success = true, Message = "Login Successful." });
+                _logger.Info($"User {loginDTO.Email} logged in successfully.");
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Login Successful.",
+                    Token = token
+                });
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Login failed for {loginModel.Email}");
+                _logger.Error(ex, $"Login failed for {loginDTO.Email}");
                 return BadRequest(new { Success = false, Message = "Login failed.", Error = ex.Message });
             }
         }
+
     }
 }

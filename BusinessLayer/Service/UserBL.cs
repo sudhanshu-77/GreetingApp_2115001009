@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RepositoryLayer.Entity;
 using RepositoryLayer.Interface;
 using BusinessLayer.Interface;
+using Middleware.JwtHelper;
 
 namespace BusinessLayer.Service
 {
@@ -11,57 +12,58 @@ namespace BusinessLayer.Service
     {
         private readonly ILogger<UserBL> _logger;
         private readonly IUserRL _userRL;
+        private readonly JwtTokenHelper _jwtTokenHelper;
 
-        public UserBL(IUserRL userRL, ILogger<UserBL> logger)
+        public UserBL(IUserRL userRL, ILogger<UserBL> logger, JwtTokenHelper jwtTokenHelper)
         {
             _logger = logger;
             _userRL = userRL;
+            _jwtTokenHelper = jwtTokenHelper; // ✅ Assign JWT Helper
         }
 
-        public UserEntity RegistrationBL(RegisterModel registerModel)
+        public UserEntity RegistrationBL(RegisterModel registerDTO)
         {
             try
             {
-                _logger.LogInformation("Attempting to register user: {Email}", registerModel.Email);
-
-                var result = _userRL.Registration(registerModel);
+                _logger.LogInformation("Attempting to register user: {Email}", registerDTO.Email);
+                var result = _userRL.Registration(registerDTO);
                 if (result != null)
                 {
-                    _logger.LogInformation("User registration successful for: {Email}", registerModel.Email);
+                    _logger.LogInformation("User registration successful for: {Email}", registerDTO.Email);
                 }
                 else
                 {
-                    _logger.LogWarning("User registration failed for: {Email}", registerModel.Email);
+                    _logger.LogWarning("User registration failed for: {Email}", registerDTO.Email);
                 }
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during user registration for {Email}", registerModel.Email);
+                _logger.LogError(ex, "Error during user registration for {Email}", registerDTO.Email);
                 throw;
             }
         }
 
-        public UserEntity LoginnUserBL(LoginModel loginModel)
+        public (UserEntity user, string token) LoginnUserBL(LoginModel loginDTO)
         {
             try
             {
-                _logger.LogInformation("Attempting to log in user: {Email}", loginModel.Email);
+                _logger.LogInformation("Attempting to log in user: {Email}", loginDTO.Email);
+                var user = _userRL.LoginnUserRL(loginDTO);
 
-                var result = _userRL.LoginnUserRL(loginModel);
-                if (result != null)
+                if (user != null)
                 {
-                    _logger.LogInformation("Login successful for user: {Email}", loginModel.Email);
+                    _logger.LogInformation("Login successful for user: {Email}", loginDTO.Email);
+                    var token = _jwtTokenHelper.GenerateToken(user);
+                    return (user, token);
                 }
-                else
-                {
-                    _logger.LogWarning("Login failed for user: {Email}", loginModel.Email);
-                }
-                return result;
+
+                _logger.LogWarning("Login failed for user: {Email}", loginDTO.Email);
+                return (null, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during login for {Email}", loginModel.Email);
+                _logger.LogError(ex, "Error during login for {Email}", loginDTO.Email);
                 throw;
             }
         }
