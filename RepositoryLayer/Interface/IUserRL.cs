@@ -10,7 +10,10 @@ namespace RepositoryLayer.Interface
 {
     public interface IUserRL
     {
-        UserEntity Registration(RegisterModel registerDTO);
-        UserEntity LoginnUserRL(LoginModel loginDTO);
+        UserEntity Registration(RegisterModel registerModel);
+        UserEntity LoginnUserRL(LoginModel loginModel);
+        public bool ValidateEmail(string email);
+        public UserEntity FindByEmail(string email);
+        public bool Update(UserEntity user);
     }
 }
