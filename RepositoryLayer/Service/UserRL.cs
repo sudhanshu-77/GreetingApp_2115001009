@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModelLayer.Model;
-using RepositoryLayer.Entity;
+using ModelLayer.Entity;
 using RepositoryLayer.Contexts;
 using Middleware.HashingAlgo;
 using RepositoryLayer.Interface;

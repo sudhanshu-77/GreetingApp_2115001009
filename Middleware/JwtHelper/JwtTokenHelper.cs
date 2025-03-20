@@ -1,6 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using RepositoryLayer.Entity;
+using ModelLayer.Entity;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
