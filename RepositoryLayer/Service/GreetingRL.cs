@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using RepositoryLayer.Interface;
 using RepositoryLayer.Contexts;
 using ModelLayer.Model;
-using RepositoryLayer.Entity;
+using ModelLayer.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace RepositoryLayer.Service
@@ -26,22 +26,29 @@ namespace RepositoryLayer.Service
 
         public GreetEntity SaveGreetingRL(GreetingModel greetingModel)
         {
-            var existingMessage = _dbContext.Greet.FirstOrDefault<GreetEntity>(e => e.Id == greetingModel.Id);
-            if (existingMessage == null)
+            try
             {
+                bool userExists = _dbContext.Users.Any(u => u.UserId == greetingModel.Uid);
+                if (!userExists)
+                {
+                    return null;
+                }
+
                 var newMessage = new GreetEntity
                 {
-
                     Message = greetingModel.Message,
+                    UserId = greetingModel.Uid // Ensure UserId is assigned
                 };
+
                 _dbContext.Greet.Add(newMessage);
                 _dbContext.SaveChanges();
 
                 return newMessage;
             }
-
-            
-            return existingMessage;
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         //UC5

@@ -176,166 +176,179 @@ namespace HelloGreetingApp.Controllers
 
         //UC4
 
-        /// <summary>
-        /// Post method to save a new greeting message.
-        /// </summary>
-        /// <param name="greetingModel">The greeting model containing the message details.</param>
-        /// <returns>Returns a confirmation of the created greeting.</returns>
         [HttpPost]
         [Route("save")]
+
         public IActionResult SaveGreeting([FromBody] GreetingModel greetingModel)
         {
-            logger.Info("SaveGreeting method called with GreetingModel: {0}", greetingModel);
             var result = _greetingBL.SaveGreetingBL(greetingModel);
+            if (result == null)
+            {
+                var response1 = new ResponseModel<object>
+                {
+                    Success = false,
+                    Message = "Unable to save Greeting. Please verify that the user exists. !",
+                    Data = result
 
+                };
+                return BadRequest(response1);
+
+            }
             var response = new ResponseModel<object>
             {
                 Success = true,
                 Message = "Greeting Created",
                 Data = result
+
             };
             return Created("Greeting Created", response);
+
         }
+
 
         //UC5
 
-        /// <summary>
-        /// Get method to retrieve a greeting message by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the greeting message.</param>
-        /// <returns>Returns the greeting message if found, otherwise a not found response.</returns>
         [HttpGet("GetGreetingById/{id}")]
         public IActionResult GetGreetingById(int id)
         {
-            logger.Info("GetGreetingById method called with id: {0}", id);
-            var response = new ResponseModel<GreetingModel>();
             try
             {
-                var result = _greetingBL.GetGreetingByIdBL(id);
-                if (result != null)
+                var entity = _greetingBL.GetGreetingByIdBL(id);
+                if (entity != null)
                 {
-                    response.Success = true;
-                    response.Message = "Greeting Message Found";
-                    response.Data = result;
-                    return Ok(response);
+                    var model = new GreetingModel
+                    {
+                        Id = entity.Id,
+                        Message = entity.Message,
+                        Uid = entity.Uid
+                    };
+                    return Ok(new ResponseModel<GreetingModel>
+                    {
+                        Success = true,
+                        Message = "Greeting Message Found",
+                        Data = model
+                    });
                 }
-                response.Success = false;
-                response.Message = "Greeting Message Not Found";
-                return NotFound(response);
+                return NotFound(new ResponseModel<GreetingModel>
+                {
+                    Success = false,
+                    Message = "Greeting Message Not Found"
+                });
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "An error occurred in GetGreetingById");
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
-
             }
         }
+
 
 
         //UC6
 
-        /// <summary>
-        /// Get method to retrieve all greeting messages.
-        /// </summary>
-        /// <returns>Returns a list of all greeting messages.</returns>
+
         [HttpGet("GetAllGreetings")]
         public IActionResult GetAllGreetings()
         {
-            logger.Info("GetAllGreetings method called");
-            ResponseModel<List<GreetingModel>> response = new ResponseModel<List<GreetingModel>>();
             try
             {
-                var result = _greetingBL.GetAllGreetingsBL();
-                if (result != null && result.Count > 0)
+                var entities = _greetingBL.GetAllGreetingsBL();
+                if (entities != null && entities.Count > 0)
                 {
-                    response.Success = true;
-                    response.Message = "Greeting Messages Found";
-                    response.Data = result;
-                    return Ok(response);
+                    var models = entities.Select(entity => new GreetingModel
+                    {
+                        Id = entity.Id,
+                        Message = entity.Message,
+                        Uid = entity.Uid
+                    }).ToList();
+
+                    return Ok(new ResponseModel<List<GreetingModel>>
+                    {
+                        Success = true,
+                        Message = "Greeting Messages Found",
+                        Data = models
+                    });
                 }
-                response.Success = false;
-                response.Message = "No Greeting Messages Found";
-                return NotFound(response);
+                return NotFound(new ResponseModel<List<GreetingModel>>
+                {
+                    Success = false,
+                    Message = "No Greeting Messages Found"
+                });
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "An error occurred in GetAllGreetings");
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
-
             }
         }
 
-        // UC7
 
-        /// <summary>
-        /// Put method to update an existing greeting message.
-        /// </summary>
-        /// <param name="id">The ID of the greeting message to update.</param>
-        /// <param name="greetModel">The updated greeting model.</param>
-        /// <returns>Returns a confirmation of the updated greeting message.</returns>
+        //UC7
+
         [HttpPut("EditGreeting/{id}")]
-        public IActionResult EditGreeting(int id, GreetingModel greetModel)
+        public IActionResult EditGreeting(int id, [FromBody] GreetingModel greetModel)
         {
-            logger.Info("EditGreeting method called with id: {0}, GreetingModel: {1}", id, greetModel);
-            ResponseModel<GreetingModel> response = new ResponseModel<GreetingModel>();
             try
             {
-                var result = _greetingBL.EditGreetingBL(id, greetModel);
-                if (result != null)
+                var entity = _greetingBL.EditGreetingBL(id, greetModel);
+                if (entity == null)
                 {
-                    response.Success = true;
-                    response.Message = "Greeting Message Updated Successfully";
-                    response.Data = result;
-                    return Ok(response);
+                    return BadRequest(new ResponseModel<object>
+                    {
+                        Success = false,
+                        Message = $"No Greeting found with ID {id} to update!"
+                    });
                 }
-                response.Success = false;
-                response.Message = "Greeting Message Not Found";
-                return NotFound(response);
+
+                var updatedModel = new GreetingModel
+                {
+                    Id = entity.Id,
+                    Message = entity.Message,
+                    Uid = entity.Uid
+                };
+
+                return Ok(new ResponseModel<GreetingModel>
+                {
+                    Success = true,
+                    Message = "Greeting Message Updated Successfully",
+                    Data = updatedModel
+                });
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "An error occurred in EditGreeting");
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
-
             }
         }
+
 
         //UC8
 
-        /// <summary>
-        /// Delete method to remove a greeting message by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the greeting message to delete.</param>
-        /// <returns>Returns a confirmation of the deleted greeting message.</returns>
         [HttpDelete("DeleteGreeting/{id}")]
         public IActionResult DeleteGreeting(int id)
         {
-            logger.Info("DeleteGreeting method called with id: {0}", id);
-            ResponseModel<string> response = new ResponseModel<string>();
             try
             {
                 bool result = _greetingBL.DeleteGreetingBL(id);
                 if (result)
                 {
-                    response.Success = true;
-                    response.Message = "Greeting Message Deleted Successfully";
-                    return Ok(response);
+                    return Ok(new ResponseModel<string>
+                    {
+                        Success = true,
+                        Message = "Greeting Message Deleted Successfully"
+                    });
                 }
-                response.Success = false;
-                response.Message = "Greeting Message Not Found";
-                return NotFound(response);
+                return NotFound(new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Greeting Message Not Found"
+                });
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "An error occurred in DeleteGreeting");
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
-
             }
         }
     }
 }
-
