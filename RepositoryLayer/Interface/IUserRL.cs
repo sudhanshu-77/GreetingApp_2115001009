@@ -10,10 +10,39 @@ namespace RepositoryLayer.Interface
 {
     public interface IUserRL
     {
+        /// <summary>
+        /// Registers a new user in the system.
+        /// </summary>
+        /// <param name="registerModel">The model containing the registration details of the user.</param>
+        /// <returns>Returns the created UserEntity object.</returns>
         UserEntity Registration(RegisterModel registerModel);
+
+        /// <summary>
+        /// Logs in a user and retrieves their information.
+        /// </summary>
+        /// <param name="loginModel">The model containing the login credentials of the user.</param>
+        /// <returns>Returns the UserEntity object associated with the logged-in user.</returns>
         UserEntity LoginnUserRL(LoginModel loginModel);
-        public bool ValidateEmail(string email);
-        public UserEntity FindByEmail(string email);
-        public bool Update(UserEntity user);
+
+        /// <summary>
+        /// Validates if the provided email exists in the system.
+        /// </summary>
+        /// <param name="email">The email address to validate.</param>
+        /// <returns>Returns true if the email exists; otherwise, false.</returns>
+        bool ValidateEmail(string email);
+
+        /// <summary>
+        /// Finds a user by their email address.
+        /// </summary>
+        /// <param name="email">The email address of the user to find.</param>
+        /// <returns>Returns the UserEntity object if found; otherwise, null.</returns>
+        UserEntity FindByEmail(string email);
+
+        /// <summary>
+        /// Updates the details of an existing user.
+        /// </summary>
+        /// <param name="user">The UserEntity object containing updated user information.</param>
+        /// <returns>Returns true if the update was successful; otherwise, false.</returns>
+        bool Update(UserEntity user);
     }
 }

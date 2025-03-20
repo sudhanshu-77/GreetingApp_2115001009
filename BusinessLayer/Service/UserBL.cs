@@ -8,12 +8,21 @@ using Middleware.JwtHelper;
 
 namespace BusinessLayer.Service
 {
+    /// <summary>
+    /// Business Layer class for user management functionalities.
+    /// </summary>
     public class UserBL : IUserBL
     {
         private readonly ILogger<UserBL> _logger;
         private readonly IUserRL _userRL;
         private readonly JwtTokenHelper _jwtTokenHelper;
 
+        /// <summary>
+        /// Constructor for UserBL.
+        /// </summary>
+        /// <param name="userRL">Repository layer dependency for user operations</param>
+        /// <param name="logger">Logger for logging user-related operations</param>
+        /// <param name="jwtTokenHelper">Helper for generating JWT tokens</param>
         public UserBL(IUserRL userRL, ILogger<UserBL> logger, JwtTokenHelper jwtTokenHelper)
         {
             _logger = logger;
@@ -21,6 +30,11 @@ namespace BusinessLayer.Service
             _jwtTokenHelper = jwtTokenHelper;
         }
 
+        /// <summary>
+        /// Registers a new user.
+        /// </summary>
+        /// <param name="registerDTO">User registration details</param>
+        /// <returns>Registered user entity</returns>
         public UserEntity RegistrationBL(RegisterModel registerDTO)
         {
             try
@@ -44,6 +58,11 @@ namespace BusinessLayer.Service
             }
         }
 
+        /// <summary>
+        /// Logs in a user and generates a JWT token upon successful authentication.
+        /// </summary>
+        /// <param name="loginDTO">User login details</param>
+        /// <returns>Tuple containing user entity and JWT token</returns>
         public (UserEntity user, string token) LoginnUserBL(LoginModel loginDTO)
         {
             try
@@ -68,24 +87,53 @@ namespace BusinessLayer.Service
             }
         }
 
+        /// <summary>
+        /// Updates the password of a user based on their email.
+        /// </summary>
+        /// <param name="email">User email</param>
+        /// <param name="newPassword">New password to be updated</param>
+        /// <returns>Boolean indicating whether the update was successful</returns>
         public bool UpdateUserPassword(string email, string newPassword)
         {
-            // Lookup user by email
-            var user = _userRL.FindByEmail(email);
-            if (user == null) return false;
+            _logger.LogInformation("Attempting to update password for user: {Email}", email);
 
-            // Hash and update the password
+            var user = _userRL.FindByEmail(email);
+            if (user == null)
+            {
+                _logger.LogWarning("User not found for password update: {Email}", email);
+                return false;
+            }
+
             user.Password = newPassword;
-            return _userRL.Update(user);
+            bool result = _userRL.Update(user);
+
+            if (result)
+                _logger.LogInformation("Password updated successfully for user: {Email}", email);
+            else
+                _logger.LogWarning("Password update failed for user: {Email}", email);
+
+            return result;
         }
 
+        /// <summary>
+        /// Retrieves user details by email.
+        /// </summary>
+        /// <param name="email">Email of the user</param>
+        /// <returns>User entity if found, otherwise null</returns>
         public UserEntity GetByEmail(string email)
         {
+            _logger.LogInformation("Fetching user details by email: {Email}", email);
             return _userRL.FindByEmail(email);
         }
 
+        /// <summary>
+        /// Validates whether an email exists in the system.
+        /// </summary>
+        /// <param name="email">Email to be validated</param>
+        /// <returns>Boolean indicating whether the email is valid</returns>
         public bool ValidateEmail(string email)
         {
+            _logger.LogInformation("Validating email: {Email}", email);
             return _userRL.ValidateEmail(email);
         }
     }

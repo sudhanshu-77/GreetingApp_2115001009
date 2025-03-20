@@ -1,4 +1,3 @@
-
 using BusinessLayer.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Middleware.GlobalExceptionHandler;
@@ -6,6 +5,7 @@ using ModelLayer.Model;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HelloGreetingApp.Controllers
 {
@@ -155,7 +155,9 @@ namespace HelloGreetingApp.Controllers
         public IActionResult GetGreeting()
         {
             logger.Info("GetGreeting method called");
-            return Ok(_greetingBL.GetGreetingBL());
+            var greeting = _greetingBL.GetGreetingBL();
+            logger.Info("Greeting retrieved: {0}", greeting);
+            return Ok(greeting);
         }
 
         //UC3
@@ -170,47 +172,55 @@ namespace HelloGreetingApp.Controllers
         {
             logger.Info("GetGreeting method called with firstName: {0}, lastName: {1}", firstName, lastName);
             string greetingMessage = _greetingBL.GetGreeting(firstName, lastName);
+            logger.Info("Personalized greeting message: {0}", greetingMessage);
             return Ok(new { Message = greetingMessage });
         }
 
-
         //UC4
 
+        /// <summary>
+        /// Post method to save a greeting.
+        /// </summary>
+        /// <param name="greetingModel">The greeting model to save.</param>
+        /// <returns>Returns confirmation of greeting creation.</returns>
         [HttpPost]
         [Route("save")]
-
         public IActionResult SaveGreeting([FromBody] GreetingModel greetingModel)
         {
+            logger.Info("SaveGreeting method called with GreetingModel: {0}", greetingModel);
             var result = _greetingBL.SaveGreetingBL(greetingModel);
             if (result == null)
             {
+                logger.Warn("Unable to save Greeting. User may not exist.");
                 var response1 = new ResponseModel<object>
                 {
                     Success = false,
-                    Message = "Unable to save Greeting. Please verify that the user exists. !",
+                    Message = "Unable to save Greeting. Please verify that the user exists.",
                     Data = result
-
                 };
                 return BadRequest(response1);
-
             }
+            logger.Info("Greeting created successfully.");
             var response = new ResponseModel<object>
             {
                 Success = true,
                 Message = "Greeting Created",
                 Data = result
-
             };
             return Created("Greeting Created", response);
-
         }
-
 
         //UC5
 
+        /// <summary>
+        /// Get method to retrieve a greeting by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the greeting to retrieve.</param>
+        /// <returns>Returns the greeting message found.</returns>
         [HttpGet("GetGreetingById/{id}")]
         public IActionResult GetGreetingById(int id)
         {
+            logger.Info("GetGreetingById method called with ID: {0}", id);
             try
             {
                 var entity = _greetingBL.GetGreetingByIdBL(id);
@@ -222,6 +232,7 @@ namespace HelloGreetingApp.Controllers
                         Message = entity.Message,
                         Uid = entity.Uid
                     };
+                    logger.Info("Greeting Message Found: {0}", model);
                     return Ok(new ResponseModel<GreetingModel>
                     {
                         Success = true,
@@ -229,6 +240,7 @@ namespace HelloGreetingApp.Controllers
                         Data = model
                     });
                 }
+                logger.Warn("Greeting Message Not Found for ID: {0}", id);
                 return NotFound(new ResponseModel<GreetingModel>
                 {
                     Success = false,
@@ -237,19 +249,22 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Error occurred while retrieving greeting by ID: {0}", id);
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
             }
         }
 
-
-
         //UC6
 
-
+        /// <summary>
+        /// Get method to retrieve all greetings.
+        /// </summary>
+        /// <returns>Returns a list of all greeting messages.</returns>
         [HttpGet("GetAllGreetings")]
         public IActionResult GetAllGreetings()
         {
+            logger.Info("GetAllGreetings method called");
             try
             {
                 var entities = _greetingBL.GetAllGreetingsBL();
@@ -262,6 +277,7 @@ namespace HelloGreetingApp.Controllers
                         Uid = entity.Uid
                     }).ToList();
 
+                    logger.Info("Greeting Messages Found: {0}", models.Count);
                     return Ok(new ResponseModel<List<GreetingModel>>
                     {
                         Success = true,
@@ -269,6 +285,7 @@ namespace HelloGreetingApp.Controllers
                         Data = models
                     });
                 }
+                logger.Warn("No Greeting Messages Found");
                 return NotFound(new ResponseModel<List<GreetingModel>>
                 {
                     Success = false,
@@ -277,22 +294,30 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Error occurred while retrieving all greetings");
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
             }
         }
 
-
         //UC7
 
+        /// <summary>
+        /// Put method to edit a greeting by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the greeting to edit.</param>
+        /// <param name="greetModel">The updated greeting model.</param>
+        /// <returns>Returns confirmation of the update.</returns>
         [HttpPut("EditGreeting/{id}")]
         public IActionResult EditGreeting(int id, [FromBody] GreetingModel greetModel)
         {
+            logger.Info("EditGreeting method called with ID: {0}", id);
             try
             {
                 var entity = _greetingBL.EditGreetingBL(id, greetModel);
                 if (entity == null)
                 {
+                    logger.Warn("No Greeting found with ID {0} to update!", id);
                     return BadRequest(new ResponseModel<object>
                     {
                         Success = false,
@@ -307,6 +332,7 @@ namespace HelloGreetingApp.Controllers
                     Uid = entity.Uid
                 };
 
+                logger.Info("Greeting Message Updated Successfully: {0}", updatedModel);
                 return Ok(new ResponseModel<GreetingModel>
                 {
                     Success = true,
@@ -316,28 +342,36 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Error occurred while editing greeting with ID: {0}", id);
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
             }
         }
 
-
         //UC8
 
+        /// <summary>
+        /// Delete method to remove a greeting by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the greeting to delete.</param>
+        /// <returns>Returns confirmation of deletion.</returns>
         [HttpDelete("DeleteGreeting/{id}")]
         public IActionResult DeleteGreeting(int id)
         {
+            logger.Info("DeleteGreeting method called with ID: {0}", id);
             try
             {
                 bool result = _greetingBL.DeleteGreetingBL(id);
                 if (result)
                 {
+                    logger.Info("Greeting Message Deleted Successfully with ID: {0}", id);
                     return Ok(new ResponseModel<string>
                     {
                         Success = true,
                         Message = "Greeting Message Deleted Successfully"
                     });
                 }
+                logger.Warn("Greeting Message Not Found for ID: {0}", id);
                 return NotFound(new ResponseModel<string>
                 {
                     Success = false,
@@ -346,6 +380,7 @@ namespace HelloGreetingApp.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Error occurred while deleting greeting with ID: {0}", id);
                 var errorResponse = ExceptionHandler.CreateErrorResponse(ex);
                 return StatusCode(500, errorResponse);
             }
