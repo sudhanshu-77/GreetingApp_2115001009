@@ -13,6 +13,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLayer.Contexts;
 using Middleware.JwtHelper;
+using Middleware.RabbitMQClient;
+using StackExchange.Redis;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Info("Starting up the application");
@@ -27,6 +29,8 @@ try
 
     // Retrieve connection string
     var connectionString = builder.Configuration.GetConnectionString("GreetingAppDB");
+    builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]));
 
     if (string.IsNullOrEmpty(connectionString))
     {
@@ -39,11 +43,20 @@ try
     // Register services
     builder.Services.AddControllers();
 
+    // Register Redis Distributed Cache
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = builder.Configuration.GetConnectionString("Redis:ConnectionString");
+        options.InstanceName = "GreetingApp_";
+    });
+    builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+
     // Register DbContext
     builder.Services.AddDbContext<GreetingAppContext>(options =>
         options.UseSqlServer(connectionString));
 
     // Register Business & Repository Layer
+    builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
     builder.Services.AddScoped<IGreetingBL, GreetingBL>();
     builder.Services.AddScoped<IGreetingRL, GreetingRL>();
     builder.Services.AddScoped<IUserBL, UserBL>();

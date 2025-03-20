@@ -12,7 +12,7 @@ namespace RepositoryLayer.Service
 {
     public class UserRL : IUserRL
     {
-        private readonly ILogger<UserRL> _logger; 
+        private readonly ILogger<UserRL> _logger;
         private readonly GreetingAppContext _dbContext;
 
         public UserRL(ILogger<UserRL> logger, GreetingAppContext dbContext)
@@ -22,10 +22,10 @@ namespace RepositoryLayer.Service
         }
 
         /// <summary>
-        /// Registration in Repo layer
+        /// Registers a new user in the repository.
         /// </summary>
-        /// <param name="registerModel"></param>
-        /// <returns></returns>
+        /// <param name="registerModel">The model containing registration details.</param>
+        /// <returns>Returns the created UserEntity object if registration is successful; otherwise, null.</returns>
         public UserEntity Registration(RegisterModel registerModel)
         {
             try
@@ -35,13 +35,13 @@ namespace RepositoryLayer.Service
                 var existingUser = _dbContext.Users.FirstOrDefault(e => e.Email == registerModel.Email);
                 if (existingUser == null)
                 {
-                    var hashedPassword = HashingMethods.HashPassword(registerModel.password); // ✅ Hash password
+                    var hashedPassword = HashingMethods.HashPassword(registerModel.password); // Hash password
 
                     var newUser = new UserEntity
                     {
                         FirstName = registerModel.firstName,
                         LastName = registerModel.lastName,
-                        Password = hashedPassword, // ✅ Store hashed password
+                        Password = hashedPassword, // Store hashed password
                         Email = registerModel.Email
                     };
 
@@ -62,6 +62,11 @@ namespace RepositoryLayer.Service
             }
         }
 
+        /// <summary>
+        /// Logs in a user and retrieves their information.
+        /// </summary>
+        /// <param name="loginModel">The model containing login credentials.</param>
+        /// <returns>Returns the UserEntity object associated with the logged-in user if successful; otherwise, null.</returns>
         public UserEntity LoginnUserRL(LoginModel loginModel)
         {
             try
@@ -69,7 +74,7 @@ namespace RepositoryLayer.Service
                 _logger.LogInformation("User attempting to log in: {Email}", loginModel.Email);
 
                 var user = _dbContext.Users.FirstOrDefault(e => e.Email == loginModel.Email);
-                if (user != null && HashingMethods.VerifyPassword(loginModel.Password, user.Password)) // ✅ Verify hashed password
+                if (user != null && HashingMethods.VerifyPassword(loginModel.Password, user.Password)) // Verify hashed password
                 {
                     _logger.LogInformation("Login successful for user: {Email}", loginModel.Email);
                     return user;
@@ -85,22 +90,32 @@ namespace RepositoryLayer.Service
             }
         }
 
+        /// <summary>
+        /// Validates if the provided email exists in the system.
+        /// </summary>
+        /// <param name="email">The email address to validate.</param>
+        /// <returns>Returns true if the email exists; otherwise, false.</returns>
         public bool ValidateEmail(string email)
         {
             var data = _dbContext.Users.FirstOrDefault(e => e.Email == email);
-
-            if (data == null)
-            {
-                return false;
-            }
-            return true;
+            return data != null;
         }
 
+        /// <summary>
+        /// Finds a user by their email address.
+        /// </summary>
+        /// <param name="email">The email address of the user to find.</param>
+        /// <returns>Returns the UserEntity object if found; otherwise, null.</returns>
         public UserEntity FindByEmail(string email)
         {
             return _dbContext.Users.FirstOrDefault(e => e.Email == email);
         }
 
+        /// <summary>
+        /// Updates the details of an existing user.
+        /// </summary>
+        /// <param name="user">The UserEntity object containing updated user information.</param>
+        /// <returns>Returns true if the update was successful; otherwise, false.</returns>
         public bool Update(UserEntity user)
         {
             _dbContext.Users.Update(user);
